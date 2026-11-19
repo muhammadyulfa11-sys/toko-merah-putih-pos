@@ -1,5 +1,5 @@
 // Isi dua nilai ini dari Supabase: Project Settings > API.
-const SUPABASE_URL = "https://hoenjhydoxbumgwshpii.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://hoenjhydoxbumgwshpii.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_dTpDaRSrsJJJz9KczDT19A_wMdEaWu5";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
