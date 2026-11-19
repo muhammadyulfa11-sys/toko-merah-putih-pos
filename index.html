@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#a51f2b">
+  <title>POS — Toko Merah Putih</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <main id="loginView" class="login-wrap">
+    <section class="login-card">
+      <div class="brand-mark">MP</div>
+      <p class="eyebrow">SISTEM KASIR & INVENTORI</p>
+      <h1>Toko Merah Putih</h1>
+      <p class="muted">Masuk untuk mengelola penjualan dan stok toko.</p>
+      <form id="loginForm">
+        <label>Email<input id="email" type="email" autocomplete="username" required placeholder="email@toko.com"></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" required placeholder="Password akun"></label>
+        <button class="primary full" type="submit">Masuk</button>
+      </form>
+      <p id="loginMessage" class="message" role="status"></p>
+      <p class="tiny muted">Akun dibuat melalui Supabase Authentication. Pendaftaran publik tidak disediakan.</p>
+    </section>
+  </main>
+
+  <div id="appView" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="side-brand"><span class="brand-mark small">MP</span><div><b>Toko Merah Putih</b><small>POS & INVENTORI</small></div></div>
+      <nav>
+        <button class="nav-btn active" data-page="dashboard">▦ <span>Dashboard</span></button>
+        <button class="nav-btn" data-page="kasir">▣ <span>Kasir / POS</span></button>
+        <button class="nav-btn" data-page="produk">▤ <span>Data Barang</span></button>
+        <button class="nav-btn" data-page="riwayat">◷ <span>Riwayat Penjualan</span></button>
+      </nav>
+      <div class="side-bottom"><small id="userEmail"></small><button id="logoutBtn" class="logout">Keluar ↗</button></div>
+    </aside>
+
+    <section class="main-area">
+      <header class="topbar"><div><p class="eyebrow">TOKO SEMBAKO</p><h2 id="pageTitle">Dashboard</h2></div><div class="today" id="todayText"></div></header>
+
+      <section id="page-dashboard" class="page">
+        <div class="stats-grid">
+          <article class="stat-card"><span>Omzet hari ini</span><strong id="statRevenue">Rp0</strong><small>Penjualan berhasil</small></article>
+          <article class="stat-card"><span>Transaksi hari ini</span><strong id="statTransactions">0</strong><small>Struk penjualan</small></article>
+          <article class="stat-card"><span>Jumlah produk</span><strong id="statProducts">0</strong><small>Barang aktif</small></article>
+          <article class="stat-card warning"><span>Stok menipis</span><strong id="statLowStock">0</strong><small>Perlu segera restock</small></article>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div><h3>Stok perlu diperhatikan</h3><p class="muted">Barang dengan stok sama dengan atau di bawah batas minimum.</p></div><button class="secondary" data-goto="produk">Kelola barang</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Barang</th><th>Stok</th><th>Minimum</th><th>Status</th></tr></thead><tbody id="lowStockRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="page-kasir" class="page hidden">
+        <div class="pos-layout">
+          <div class="panel product-picker">
+            <div class="panel-head"><div><h3>Pilih barang</h3><p class="muted">Cari nama atau barcode barang.</p></div></div>
+            <input id="productSearch" class="search" placeholder="Cari barang / barcode...">
+            <div id="productGrid" class="product-grid"></div>
+          </div>
+          <div class="panel cart-panel">
+            <div class="panel-head"><div><h3>Keranjang</h3><p class="muted"><span id="cartCount">0</span> item</p></div><button id="clearCart" class="text-btn">Kosongkan</button></div>
+            <div id="cartItems" class="cart-items"><p class="muted">Belum ada barang.</p></div>
+            <div class="cart-total"><span>Total</span><strong id="cartTotal">Rp0</strong></div>
+            <label>Metode pembayaran<select id="paymentMethod"><option value="cash">Tunai</option><option value="transfer">Transfer bank</option><option value="qris">QRIS</option></select></label>
+            <label>Jumlah dibayar<input id="amountPaid" type="number" min="0" step="1" placeholder="Masukkan nominal pembayaran"></label>
+            <div class="change-row"><span>Kembalian</span><b id="changeAmount">Rp0</b></div>
+            <button id="checkoutBtn" class="primary full" disabled>Proses penjualan</button>
+            <p id="checkoutMessage" class="message"></p>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-produk" class="page hidden">
+        <div class="panel">
+          <div class="panel-head"><div><h3>Master barang</h3><p class="muted">Tambah barang, harga jual, modal, dan stok.</p></div></div>
+          <form id="productForm" class="product-form">
+            <label>Nama barang<input id="pName" required placeholder="Contoh: Beras Ramos 5 kg"></label>
+            <label>Barcode / kode<input id="pBarcode" placeholder="Opsional"></label>
+            <label>Kategori<input id="pCategory" placeholder="Contoh: Beras"></label>
+            <label>Satuan<input id="pUnit" required value="pcs" placeholder="pcs / kg / liter"></label>
+            <label>Harga modal (Rp)<input id="pCost" type="number" min="0" required></label>
+            <label>Harga jual (Rp)<input id="pPrice" type="number" min="0" required></label>
+            <label>Stok awal<input id="pStock" type="number" min="0" required value="0"></label>
+            <label>Stok minimum<input id="pMinStock" type="number" min="0" required value="5"></label>
+            <button class="primary" type="submit">+ Simpan barang</button>
+          </form>
+          <div class="table-wrap"><table><thead><tr><th>Barang</th><th>Kategori</th><th>Modal</th><th>Harga jual</th><th>Stok</th><th>Minimum</th><th>Status</th></tr></thead><tbody id="productRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="page-riwayat" class="page hidden">
+        <div class="panel">
+          <div class="panel-head"><div><h3>Riwayat penjualan</h3><p class="muted">Transaksi terbaru toko.</p></div><button id="refreshSales" class="secondary">Muat ulang</button></div>
+          <div class="table-wrap"><table><thead><tr><th>No. transaksi</th><th>Waktu</th><th>Pembayaran</th><th>Total</th><th>Dibayar</th><th>Kembalian</th><th></th></tr></thead><tbody id="salesRows"></tbody></table></div>
+        </div>
+      </section>
+    </section>
+  </div>
+  <div id="receiptArea" class="receipt"></div>
+  <script src="app.js"></script>
+</body>
+</html>
